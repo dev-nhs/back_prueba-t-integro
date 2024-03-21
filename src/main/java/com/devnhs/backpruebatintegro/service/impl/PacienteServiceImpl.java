@@ -147,13 +147,8 @@ public class PacienteServiceImpl implements PacienteService {
     }
 
     @Override
-    @Transactional
     public Paciente savePaciente(Paciente objpaciente) {
-
-        pacienteRepository.save(objpaciente);
-        entityManager.flush();
-
-        return objpaciente;
+        return pacienteRepository.save(objpaciente);
     }
 
     @Override
@@ -182,10 +177,9 @@ public class PacienteServiceImpl implements PacienteService {
     @Override
     @Transactional
     public List<PacienteDTO> deletePaciente(Integer id_paciente) {
-        if (id_paciente != null) {
 
+        try {
             pacienteRepository.deleteById(id_paciente);
-
             Query query = entityManager.createNativeQuery(
                     "DELETE FROM \"Admision\".tb_paciente_acompanante p WHERE p.id_paciente = :param");
             query.setParameter("param", id_paciente);
@@ -193,16 +187,18 @@ public class PacienteServiceImpl implements PacienteService {
             int rowsAffected = query.executeUpdate();
 
             if (rowsAffected > 0) {
-                System.out.println("Se eliminaron " + rowsAffected + " registros.");
+                System.out.println("\n Se eliminaron " + rowsAffected + " registros. \n");
                 return getAllPaciente();
 
             } else {
-                System.out.println("No se eliminaron registros.");
-                return null;
+                System.out.println("\n No se elimnaron registros, el paciente no tenia acompañanate. \n");
+                return getAllPaciente();
             }
-        } else {
-            return null;
+
+        } catch (Exception e) {
+            throw new IllegalArgumentException("No se pudo eliminar el paciente.");
         }
+
     }
 
 }
